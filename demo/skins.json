@@ -2,99 +2,113 @@
   {
     "id": "stock",
     "name": "Stock Archie",
-    "module": "github.com/ouankou/archie-skins",
-    "path": ".",
-    "description": "Upstream Archie, unchanged: the baseline for comparison."
+    "description": "Upstream Archie, unchanged: the baseline for comparison.",
+    "themes": []
   },
   {
     "id": "retro",
     "name": "Analog Retro",
-    "module": "github.com/ouankou/archie-skins/skins/retro",
-    "path": "skins/retro",
-    "description": "Cassette colors, warm paper, and a spacious reading layout."
+    "description": "Cassette colors, warm paper, and a spacious reading layout.",
+    "themes": [
+      "skins/retro"
+    ]
   },
   {
     "id": "washi",
     "name": "和紙 Washi",
-    "module": "github.com/ouankou/archie-skins/skins/washi",
-    "path": "skins/washi",
     "description": "Warm paper and ink; a quiet light palette.",
     "preview": {
       "background": "#F2EDE2",
       "foreground": "#1E1E20",
       "accent": "#2F4A6D"
-    }
+    },
+    "themes": [
+      "skins/washi",
+      "common"
+    ]
   },
   {
     "id": "aojashin",
     "name": "青写真 Aojashin",
-    "module": "github.com/ouankou/archie-skins/skins/aojashin",
-    "path": "skins/aojashin",
     "description": "Cool paper and blueprint blue.",
     "preview": {
       "background": "#F1F4F8",
       "foreground": "#0E2C57",
       "accent": "#2463AE"
-    }
+    },
+    "themes": [
+      "skins/aojashin",
+      "common"
+    ]
   },
   {
     "id": "yoru",
     "name": "夜 Yoru",
-    "module": "github.com/ouankou/archie-skins/skins/yoru",
-    "path": "skins/yoru",
     "description": "Night surfaces, warm text, a soft blue-grey accent.",
     "preview": {
       "background": "#0B1012",
       "foreground": "#E7E4DA",
       "accent": "#9FC3C9"
-    }
+    },
+    "themes": [
+      "skins/yoru",
+      "common"
+    ]
   },
   {
     "id": "suimen",
     "name": "水面 Suimen",
-    "module": "github.com/ouankou/archie-skins/skins/suimen",
-    "path": "skins/suimen",
     "description": "Night water, teal surfaces, a clear cyan accent.",
     "preview": {
       "background": "#041417",
       "foreground": "#D6FFF6",
       "accent": "#22F2D0"
-    }
+    },
+    "themes": [
+      "skins/suimen",
+      "common"
+    ]
   },
   {
     "id": "rinko",
     "name": "燐光 Rinko",
-    "module": "github.com/ouankou/archie-skins/skins/rinko",
-    "path": "skins/rinko",
     "description": "Deep green surfaces and restrained phosphor green.",
     "preview": {
       "background": "#03100E",
       "foreground": "#CFFFE8",
       "accent": "#7CFFC4"
-    }
+    },
+    "themes": [
+      "skins/rinko",
+      "common"
+    ]
   },
   {
     "id": "bunko",
     "name": "分光 Bunko",
-    "module": "github.com/ouankou/archie-skins/skins/bunko",
-    "path": "skins/bunko",
     "description": "Near-black indigo and spectral cyan.",
     "preview": {
       "background": "#07080F",
       "foreground": "#F2F7FF",
       "accent": "#1FE5FF"
-    }
+    },
+    "themes": [
+      "skins/bunko",
+      "common"
+    ]
   },
   {
     "id": "denko",
     "name": "電光 Denko",
-    "module": "github.com/ouankou/archie-skins/skins/denko",
-    "path": "skins/denko",
     "description": "Violet surfaces with electric cyan.",
     "preview": {
       "background": "#0B0A1A",
       "foreground": "#E6F9FF",
       "accent": "#4DF3FF"
-    }
+    },
+    "themes": [
+      "skins/denko",
+      "common"
+    ]
   }
 ]

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build isolated skin previews; gallery chrome never enters a consuming module."""
+"""Build plain Hugo theme previews; gallery controls stay in the demo."""
 import argparse
 import html
 import json
@@ -25,11 +25,10 @@ def load_skins(manifest):
         if not re.fullmatch(r'[a-z][a-z0-9-]*', identifier) or identifier in ids:
             raise ValueError('skin IDs must be unique lowercase URL slugs')
         ids.add(identifier)
-        source = (ROOT / skin['path']).resolve()
-        if not source.is_relative_to(ROOT) or not (source / 'go.mod').is_file():
-            raise ValueError('skin path must identify a module inside this repository')
-        if not skin.get('name') or not skin.get('module') or not skin.get('description'):
-            raise ValueError('each skin needs name, module, and description')
+        for component in skin['themes']:
+            source = (ROOT / component).resolve()
+            if not source.is_relative_to(ROOT) or not source.is_dir():
+                raise ValueError('theme components must be directories in this repository')
         if 'preview' in skin and (set(skin['preview']) != {'background', 'foreground', 'accent'} or
                 not all(re.fullmatch(r'#[0-9A-Fa-f]{6}', value) for value in skin['preview'].values())):
             raise ValueError('preview must contain background, foreground, and accent hex colors')
@@ -54,19 +53,21 @@ def build(destination, base_url, manifest):
     destination.mkdir(parents=True, exist_ok=True)
     skins = load_skins(manifest)
     config = tomllib.loads((ROOT / 'exampleSite/hugo.toml').read_text())
-    config.pop('module', None)
+    upstream = ROOT / 'vendor/archie'
+    if not upstream.is_dir():
+        raise ValueError('Clone athul/archie into vendor/archie first')
     inventories = {}
     for skin in skins:
         identifier = skin['id']
         with tempfile.TemporaryDirectory(prefix='archie-gallery-') as temporary:
             site = Path(temporary)
             shutil.copytree(ROOT / 'exampleSite/content', site / 'content')
-            module = skin['module']
-            (site / 'go.mod').write_text('module example.org/archie-gallery\n\ngo 1.23.0\n\n'
-                + f'require {module} v0.0.0\nreplace {module} => {json.dumps(str((ROOT / skin["path"]).resolve()))}\n'
-                + (f'replace github.com/ouankou/archie-skins => {json.dumps(str(ROOT))}\n'
-                   if module != 'github.com/ouankou/archie-skins' else ''))
-            variant = dict(config, baseURL=base_url + identifier + '/', module={'imports': [{'path': module}]})
+            themes = ['archie-skins/' + component for component in skin['themes']]
+            for component, theme in zip(skin['themes'], themes):
+                shutil.copytree(ROOT / component, site / 'themes' / theme)
+            shutil.copytree(upstream, site / 'themes/archie',
+                            ignore=shutil.ignore_patterns('.git', '.github', 'exampleSite', 'go.mod', 'go.sum'))
+            variant = dict(config, baseURL=base_url + identifier + '/', theme=themes + ['archie'])
             (site / 'hugo.json').write_text(json.dumps(variant))
             subprocess.run([os.environ.get('HUGO_BIN', 'hugo'), '--source', str(site),
                 '--destination', str(destination / identifier)], check=True)
@@ -89,7 +90,7 @@ def build(destination, base_url, manifest):
             if not re.search(r'<body\b', markup):
                 continue  # Hugo redirect aliases should remain redirects.
             # Archie's absLangURL("/") wordmark ignores a baseURL subpath.
-            # Fix only this generated demo link; upstream/module files stay unchanged.
+            # Fix only this generated demo link; upstream/theme files stay unchanged.
             origin_home = f'{parsed.scheme}://{parsed.netloc}/'
             markup = markup.replace(f'href="{origin_home}"', f'href="{base_path}{skin["id"]}/"')
             # Older upstream tag links can also escape a subpath. Rewrite only
