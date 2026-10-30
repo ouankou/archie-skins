@@ -15,5 +15,9 @@
 .gallery-index .gallery-card:hover { border-color:#21635b; background:#e8f0e7; }
 .gallery-index .gallery-card h2 { margin:0 0 16px; font-size:1.6rem; }
 .gallery-index .gallery-card span { font-size:.9rem; color:#21635b; text-decoration:underline; }
+.gallery-swatch { display:grid; gap:12px; margin:-12px -12px 24px; padding:24px; background:var(--preview-bg); color:var(--preview-fg); border-radius:3px; }
+.gallery-swatch i { width:6px; height:6px; background:var(--preview-accent); }
+.gallery-swatch b { font-weight:400; font-size:1.2rem; }
+.gallery-swatch em { font-size:.75rem; font-style:normal; }
 .gallery-index footer { margin-top:56px; border-top:1px solid #b7b9a8; padding-top:24px; font-size:.85rem; }
 @media(max-width:380px) { .skin-gallery { gap:.4rem; font-size:12px; padding:.7rem .4rem; } .skin-gallery a { padding:.35rem .45rem; } }

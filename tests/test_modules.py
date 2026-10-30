@@ -115,7 +115,9 @@ class ModuleIntegration(unittest.TestCase):
         for path in [ROOT/'go.mod', ROOT/'skins/retro/go.mod']:
             self.assertIn(f'{UPSTREAM} {VERSION}', path.read_text())
         self.assertFalse((ROOT/'skins/retro/layouts/partials/header.html').exists())
-        self.assertFalse((ROOT/'layouts').exists())
+        # Root may carry namespaced opt-in helpers, never overrides of Archie.
+        self.assertEqual([p.relative_to(ROOT/'layouts').as_posix() for p in (ROOT/'layouts').rglob('*.html')],
+                         ['partials/archie-skins/inua/navigation.html'])
 
 
 if __name__ == '__main__':
