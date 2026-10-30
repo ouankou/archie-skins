@@ -1,9 +1,3 @@
-[module]
-  [module.hugoVersion]
-    min = "0.157.0"
-  [[module.imports]]
-    path = "github.com/athul/archie"
-
 [params]
   mode = "toggle"
   customCSS = ["archie-skins/retro/skin.css", "archie-skins/retro/reading.css"]
