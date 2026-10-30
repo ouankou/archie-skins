@@ -1,0 +1,4 @@
+[
+  {"id":"stock", "name":"Stock Archie", "module":"github.com/ouankou/archie-skins", "path":".", "description":"Upstream Archie, unchanged: the baseline for comparison."},
+  {"id":"retro", "name":"Analog Retro", "module":"github.com/ouankou/archie-skins/skins/retro", "path":"skins/retro", "description":"Cassette colors, warm paper, and a spacious reading layout."}
+]
