@@ -17,26 +17,30 @@ jobs:
       contents: read
       pages: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: '1.24.4'
+          go-version: '1.27.3'
           cache: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.15.2'
       - name: Install Hugo
         run: |
-          curl -fsSL https://github.com/gohugoio/hugo/releases/download/v0.157.0/hugo_0.157.0_linux-amd64.tar.gz -o /tmp/hugo.tar.gz
-          echo '78e0a49ec4fb32bfac70a06028297f79b3273fb7e2475eb7ffa1bc208f4c2552  /tmp/hugo.tar.gz' | sha256sum -c -
+          curl -fsSL https://github.com/gohugoio/hugo/releases/download/v0.169.0/hugo_0.169.0_linux-amd64.tar.gz -o /tmp/hugo.tar.gz
+          echo '2d2f0bfe357d8cb4cec02f6bb28a3bff34978c8dda44b618029c5eb9d66765a7  /tmp/hugo.tar.gz' | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/hugo-bin"
           tar -xzf /tmp/hugo.tar.gz -C "$RUNNER_TEMP/hugo-bin" hugo
           echo "$RUNNER_TEMP/hugo-bin" >> "$GITHUB_PATH"
       - name: Validate isolated gallery builds
         run: python3 -m unittest discover -s tests -p test_gallery.py -v
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '26.13.0'
+          package-manager-cache: false
       - name: Check gallery navigation in Chromium
         run: |
-          npm install --no-save playwright@1.58.2
+          npm install --no-save playwright@1.64.1
           npx playwright install --with-deps chromium
           node tests/gallery-browser.cjs
       - name: Build public demo artifact
@@ -44,7 +48,7 @@ jobs:
       - name: Read existing Pages configuration
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Verify the configured custom domain
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
@@ -54,11 +58,11 @@ jobs:
             echo 'Set repository Settings > Pages > Custom domain to archie.ouankou.com and enable HTTPS. Workflow publishing does not use CNAME files.' >&2
             exit 1
           fi
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           path: _site
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: gallery-browser-screenshots
@@ -77,4 +81,4 @@ jobs:
     steps:
       - name: Deploy tested gallery
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
