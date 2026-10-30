@@ -134,3 +134,9 @@ MIT notices: [Archie](skins/retro/LICENSE-Archie),
 [Feather](skins/retro/LICENSE-Feather). Those third-party components are not
 relicensed. See the [provenance notice](skins/retro/NOTICE.md).
 
+## Preview gallery
+
+The [demo gallery](https://archie.ouankou.com/) is designed to compare stock Archie
+and retro using the same content, with page-preserving skin switching. It deploys
+from `main` through GitHub Actions once this PR is merged and the Pages custom
+domain is configured; PR builds never deploy. See [gallery setup and extension](docs/demo-gallery.md).

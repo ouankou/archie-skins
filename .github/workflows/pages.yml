@@ -1,0 +1,80 @@
+name: Skin gallery / Pages
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gallery-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+          cache: false
+      - name: Install Hugo
+        run: |
+          curl -fsSL https://github.com/gohugoio/hugo/releases/download/v0.157.0/hugo_0.157.0_linux-amd64.tar.gz -o /tmp/hugo.tar.gz
+          echo '78e0a49ec4fb32bfac70a06028297f79b3273fb7e2475eb7ffa1bc208f4c2552  /tmp/hugo.tar.gz' | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/hugo-bin"
+          tar -xzf /tmp/hugo.tar.gz -C "$RUNNER_TEMP/hugo-bin" hugo
+          echo "$RUNNER_TEMP/hugo-bin" >> "$GITHUB_PATH"
+      - name: Validate isolated gallery builds
+        run: python3 -m unittest discover -s tests -p test_gallery.py -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check gallery navigation in Chromium
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+          node tests/gallery-browser.cjs
+      - name: Build public demo artifact
+        run: python3 demo/build.py --destination _site --base-url https://archie.ouankou.com/
+      - name: Read existing Pages configuration
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Verify the configured custom domain
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          if [ "${PAGES_BASE_URL%/}" != 'https://archie.ouankou.com' ]; then
+            echo 'Set repository Settings > Pages > Custom domain to archie.ouankou.com and enable HTTPS. Workflow publishing does not use CNAME files.' >&2
+            exit 1
+          fi
+      - uses: actions/upload-pages-artifact@v4
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          path: _site
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gallery-browser-screenshots
+          path: .test-output/gallery-screenshots/
+          include-hidden-files: true
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy tested gallery
+        id: deployment
+        uses: actions/deploy-pages@v4
