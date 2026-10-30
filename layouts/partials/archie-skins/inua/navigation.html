@@ -1,0 +1,26 @@
+{{- /* SPDX-License-Identifier: BSD-2-Clause. Opt-in: stock Archie never calls this. */ -}}
+{{- define "inua-feathericon" -}}
+  {{- $sprite := resources.Get "svg/feather-sprite.svg" | fingerprint -}}
+  <svg class="feather" aria-hidden="true"><use href="{{ $sprite.RelPermalink }}#{{ .Icon }}" /></svg>
+{{- end -}}
+{{- $skin := .Site.Params.inua.skin -}}
+{{- $scheme := .Site.Params.inua.scheme -}}
+{{- if ne .Site.Params.mode $scheme -}}
+  {{- errorf "Inua skin %s uses its native %s palette: set params.mode = %q (auto/toggle are not supported)" $skin $scheme $scheme -}}
+{{- end -}}
+{{- range slice "archie-skins/inua/base.css" (printf "archie-skins/%s/tokens.css" $skin) -}}
+  {{- if not (in $.Site.Params.customCSS .) -}}
+    {{- errorf "params.customCSS replaces module defaults: retain required Inua asset %s before adding your own" . -}}
+  {{- end -}}
+{{- end -}}
+<header>
+  <div class="main"><a href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}</a></div>
+  <nav aria-label="Main">
+    {{- $current := .RelPermalink -}}
+    {{- range .Site.Menus.main -}}
+      {{- $url := .URL -}}
+      {{- with .Page }}{{ $url = .RelPermalink }}{{ end -}}
+      <a href="{{ $url }}"{{ if eq $current $url }} aria-current="page"{{ end }}>{{ .Name }}</a>
+    {{- end -}}
+  </nav>
+</header>
