@@ -1,0 +1,8 @@
+public/
+resources/
+.hugo_build.lock
+node_modules/
+.test-output/
+
+__pycache__/
+*.pyc
