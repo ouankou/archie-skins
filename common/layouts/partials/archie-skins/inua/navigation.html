@@ -10,7 +10,7 @@
 {{- end -}}
 {{- range slice "archie-skins/inua/base.css" (printf "archie-skins/%s/tokens.css" $skin) -}}
   {{- if not (in $.Site.Params.customCSS .) -}}
-    {{- errorf "params.customCSS replaces module defaults: retain required Inua asset %s before adding your own" . -}}
+    {{- errorf "params.customCSS replaces theme defaults: retain required Inua asset %s before adding your own" . -}}
   {{- end -}}
 {{- end -}}
 <header>

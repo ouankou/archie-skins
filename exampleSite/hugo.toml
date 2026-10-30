@@ -6,9 +6,6 @@ copyright = "© Example Author"
   subtitle = "Experiments, ideas, and things worth keeping."
   mainSections = ["posts"]
   useCDN = false
-[module]
-  [[module.imports]]
-    path = "github.com/ouankou/archie-skins/skins/retro"
 [[menu.main]]
   name = "Home"
   pageRef = "/"
