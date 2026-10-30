@@ -1,0 +1,58 @@
+{{ define "main" }}
+<main id="main-content" tabindex="-1">
+  <article class="post-container{{ if .Params.toc }} has-toc{{ end }}">
+        <header class="post-header">
+          <h1 class="title">{{ .Title }}</h1>
+          {{ if or (eq .Type "posts") (.Params.showDate | default false) }}
+          {{ $dateFormat := .Site.Params.dateFormat | default ":date_medium" }}
+          {{ $publishedAt := .Date.Format "2006-01-02T15:04:05Z07:00" }}
+          {{ $updatedAt := .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}
+          {{ $publishedDayKey := .Date.Format "2006-01-02" }}
+          {{ $updatedDayKey := .Lastmod.Format "2006-01-02" }}
+          {{ $publishedText := time.Format $dateFormat .Date }}
+          {{ $updatedText := time.Format $dateFormat .Lastmod }}
+          {{ $showUpdated := gt $updatedDayKey $publishedDayKey }}
+          <div class="meta">
+            Posted on <time datetime="{{ $publishedAt }}">{{ $publishedText }}</time>
+            {{ if $showUpdated }}(Updated on <time datetime="{{ $updatedAt }}">{{ $updatedText }}</time>){{ end }}
+            {{ if .Draft }}<span class="draft-label">DRAFT</span>{{ end }}
+          </div>
+          {{ end }}
+        </header>
+
+    {{ if .Params.toc }}
+    {{ $toc := replace .TableOfContents `<nav id="TableOfContents">` `<nav id="TableOfContents" aria-labelledby="table-of-contents-title">` }}
+    <aside class="toc" aria-label="Article navigation">
+      <details class="toc-disclosure" open>
+        <summary id="table-of-contents-title">On this page</summary>
+        {{ $toc | safeHTML }}
+      </details>
+    </aside>
+    {{ end }}
+    <div class="post-content">
+        {{ with .Params.tldr }}
+        <div class="tldr">
+          {{ . | markdownify }}
+        </div>
+        {{ end }}
+        <section class="body">
+          {{ .Content }}
+        </section>
+        {{ if eq .Type "posts" }}
+        {{ with .GetTerms "tags" }}
+        <footer class="post-tags">
+          <nav class="nav tags" aria-label="Tags">
+            <ul class="tags">
+              {{ range . }}
+              <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
+              {{ end }}
+            </ul>
+          </nav>
+        </footer>
+        {{ end }}
+        {{ end }}
+    </div>
+  </article>
+</main>
+{{ end }}
+

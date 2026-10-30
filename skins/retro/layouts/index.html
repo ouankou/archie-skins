@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+{{ partial "archie-skins/retro/validate.html" . }}
+<html lang="{{ .Site.Language.Lang }}" data-color-mode="{{ .Site.Params.mode }}" data-theme="{{ if eq .Site.Params.mode "light" }}light{{ else }}dark{{ end }}">
+	{{ partial "header.html" . }}
+	<body>
+		<div class="content">
+			{{ partial "head.html" . }}
+
+			<main id="main-content" class="list" tabindex="-1">
+                <section class="tape-hero" aria-labelledby="intro-title">
+                  <div class="tape-label"><span>{{ replace .Site.Copyright "© " "" }}</span><span aria-hidden="true">● REC</span></div>
+                  <div class="tape-hero-main">
+                    <div><h1 id="intro-title">{{ .Site.Title }}</h1><p>{{ .Site.Params.Subtitle }}</p></div>
+                    <svg class="cassette" viewBox="0 0 220 140" fill="none" aria-hidden="true">
+                      <rect x="3" y="3" width="214" height="134" rx="8" stroke="currentColor" stroke-width="3"/>
+                      <rect x="17" y="17" width="186" height="78" rx="5" stroke="currentColor" stroke-width="2"/>
+                      <path d="M36 95V38h148v57M37 116h146l9 20H28l9-20Z" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="58" cy="67" r="18" stroke="currentColor" stroke-width="5"/><circle cx="162" cy="67" r="18" stroke="currentColor" stroke-width="5"/>
+                      <path d="M76 53h68v28H76zM58 47v9m0 22v9m-20-20h9m22 0h9m84-20v9m0 22v9m-20-20h9m22 0h9" stroke="currentColor" stroke-width="3"/>
+                      <circle cx="18" cy="120" r="3" fill="currentColor"/><circle cx="202" cy="120" r="3" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  <div class="tape-stripes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                </section>
+                <div class="section-label"><h2>Latest entries</h2><span>THE ARCHIVE / {{ len (where (where .Site.RegularPages "Type" "in" .Site.Params.mainSections) "Params.hidden" "ne" true) }} {{ .Site.Params.retro.archiveLabel | default "ENTRIES" }}</span></div>
+				{{ $pages := where .Site.RegularPages "Type" "in" .Site.Params.mainSections }}
+				{{ $paginator := .Paginate (where $pages "Params.hidden" "ne" true) }}
+				{{ range $paginator.Pages }}
+				<section class="list-item">
+					<h2 class="title"><a href="{{ .RelPermalink }}">{{.Title}}</a></h2>
+					<time>{{ dateFormat ":date_medium" .Date }}{{ if .Draft }} <span class="draft-label">DRAFT</span> {{ end }}</time>
+					<br>{{ template "partials/pagedescription.html" . }}
+					<a class="readmore" href="{{ .RelPermalink }}">Read more ⟶</a>
+				</section>
+				{{ end }}
+				{{ template "partials/paginator.html" . }}
+			</main>
+			{{ partial "footer.html" . }}
+		</div>
+
+	</body>
+</html>
+

@@ -1,0 +1,61 @@
+/* Reading layout, intentionally separate from the analog skin. */
+:root { --content-max-width: 1248px; --content-padding: 32px; }
+.content { padding-inline: var(--content-padding); width: 100%; max-width: var(--content-max-width); max-inline-size: var(--content-max-width); }
+.post-container { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-block-start: 48px; }
+.post-header, .post-content, .toc { min-width: 0; min-inline-size: 0; }
+.post-container:not(.has-toc) { max-width: 896px; margin-inline: auto; }
+.post-content { overflow-wrap: anywhere; }
+.post-header { overflow-wrap: anywhere; }
+.toc { width: 100%; max-width: none; max-inline-size: none; order: initial; position: static; margin: 0; }
+.toc-disclosure { max-height: min(70vh, 48rem); overflow-y: auto; scrollbar-gutter: stable; overflow-wrap: anywhere; }
+.toc-disclosure summary { position: sticky; top: 0; background: var(--tape-paper, white); }
+@media (min-width: 75rem) {
+  .has-toc { grid-template-columns: minmax(0, 1fr) 240px; column-gap: 48px; }
+  .has-toc .post-header { grid-column: 1; grid-row: 1; }
+  .has-toc .post-content { grid-column: 1; grid-row: 2; }
+  .has-toc .toc { grid-column: 2; grid-row: 1 / span 2; position: sticky; top: 32px; align-self: start; }
+}
+@media (max-width: 74.99rem) {
+  .post-container { max-width: 896px; margin-inline: auto; }
+  .toc { border-inline-start: 0; border-block: 1px solid var(--tape-line, #ccc); padding: 6px 0; }
+  .toc-disclosure summary { padding: 10px 0; }
+  .toc-disclosure nav { padding-block: 8px 16px; }
+}
+/* Soft-wrap source lines without editing code text or collapsing its whitespace.
+   Hugo emits inline line numbers so each number stays with its wrapped source line. */
+.highlight { max-width: 100%; max-inline-size: 100%; overflow: visible; }
+.highlight pre, .body pre {
+  max-width: 100%; max-inline-size: 100%;
+  white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal;
+  text-indent: 0; /* Do not inherit hanging list-marker indentation. */
+}
+.highlight pre { border-color: var(--tape-line, #ccc); }
+.highlight pre code { white-space: inherit; overflow-wrap: inherit; word-break: inherit; }
+/* Chroma's outer span is a flex row; its last child holds the source text.
+   Allow that child to shrink below a long token's intrinsic width. The optional
+   preceding line-number span retains Chroma's padded, non-selectable gutter. */
+.highlight pre code > span > span:last-child { min-width: 0; flex: 1; }
+.highlight pre code > span > span:not(:last-child) { flex-shrink: 0; }
+.body :not(pre) > code { overflow-wrap: anywhere; }
+.table-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+.table-scroll table { width: 100%; min-width: 34rem; }
+.table-scroll :is(td, th) { overflow-wrap: anywhere; }
+.body :is(img, video, iframe) { max-width: 100%; max-inline-size: 100%; }
+.body :is(img, video) { height: auto; }
+.body figure { display: block; padding-inline: 0; }
+.body figure img { max-height: none; max-block-size: none; }
+.body svg:not(.feather) { max-width: 100%; max-inline-size: 100%; max-height: none; max-block-size: none; height: auto; }
+@media (max-width: 47.99rem) {
+  :root { --content-padding: 20px; }
+  .post-container { margin-block-start: 32px; gap: 22px; }
+}
+@media (max-width: 22rem) { :root { --content-padding: 16px; } .site-header nav { gap: 14px; } }
+@media print {
+  .content { max-width: none; padding: 0; }
+  .has-toc { display: block; }
+  .toc, .site-header, .skip-link, .nav-toggle { display: none; }
+  .highlight, .table-scroll { overflow: visible; }
+  .highlight pre code, .body pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .table-scroll table { min-width: 0; }
+}
+

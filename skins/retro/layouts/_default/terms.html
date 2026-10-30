@@ -1,0 +1,23 @@
+{{ define "main" }}
+<main id="main-content" tabindex="-1">
+<h1 class="page-title">{{ .Site.Params.retro.taxonomyTitle | default .Title }}</h1>
+
+{{ $biggest := 1 }}
+{{ $smallest := 1 }}
+{{ $max := 3 }}
+{{ $min := 1 }}
+{{ $size := $min }}
+
+{{ $data := .Data }}
+<div class="tag-cloud">
+	<ul class="tags">
+		{{ range $key, $value := .Data.Terms.ByCount }}
+		{{ $size := (add (mul (div $value.Count $biggest) (sub $max $min)) $min) }}
+		{{ $size := (cond (eq $biggest $smallest) $min $size) }}
+		<li><a style="font-size: {{ $size }}rem;" href="{{ $value.Page.RelPermalink }}">{{ $value.Name }} ({{ $value.Count }})</a></li>
+		{{ end }}
+	</ul>
+</div>
+</main>
+{{ end }}
+
