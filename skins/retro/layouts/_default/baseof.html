@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+{{ partial "archie-skins/retro/validate.html" . }}
+<html lang="{{ .Site.Language.Lang }}" data-color-mode="{{ .Site.Params.mode }}" data-theme="{{ if eq .Site.Params.mode "light" }}light{{ else }}dark{{ end }}">
+    {{- partial "header.html" . -}}
+    <body>
+        <div class="content">
+        {{- partial "head.html" . -}}
+        {{- block "main" . }}{{- end }}
+        {{- partial "footer.html" . -}}
+        </div>
+    </body>
+</html>
+

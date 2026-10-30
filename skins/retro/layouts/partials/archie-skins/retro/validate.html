@@ -1,0 +1,11 @@
+{{- if not (in (slice "light" "dark" "auto" "toggle") .Site.Params.mode) -}}
+  {{- errorf "retro: params.mode must be light, dark, auto, or toggle (got %q)" .Site.Params.mode -}}
+{{- end -}}
+{{- range (slice "archie-skins/retro/skin.css" "archie-skins/retro/reading.css") -}}
+  {{- if not (in $.Site.Params.customCSS .) -}}
+    {{- errorf "retro: params.customCSS replaces module defaults; include %q before your own CSS" . -}}
+  {{- end -}}
+{{- end -}}
+{{- if not (in .Site.Params.customJS "archie-skins/retro/reading.js") -}}
+  {{- errorf "retro: params.customJS replaces module defaults; include archie-skins/retro/reading.js before your own scripts" -}}
+{{- end -}}
