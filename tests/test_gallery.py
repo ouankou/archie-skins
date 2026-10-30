@@ -15,6 +15,9 @@ from urllib.parse import urljoin, urlparse, unquote
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = 'https://gallery.example.test/preview/'
 
+def gallery_skins():
+    return json.loads((ROOT/'demo/skins.json').read_text())
+
 
 class Document(HTMLParser):
     def __init__(self, source):
@@ -23,10 +26,17 @@ class Document(HTMLParser):
         self.resources = []
         self.switches = {}
         self.gallery_count = 0
+        self.article_depth = 0
+        self.article_text = []
         self.feed(source)
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        void = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'}
+        if self.article_depth and tag not in void:
+            self.article_depth += 1
+        elif 'body' in attrs.get('class', '').split():
+            self.article_depth = 1
         if tag == 'nav' and 'skin-gallery' in attrs.get('class', '').split():
             self.gallery_count += 1
         if tag == 'a' and 'href' in attrs:
@@ -38,10 +48,20 @@ class Document(HTMLParser):
             if value:
                 self.resources.append(value)
 
+    def handle_endtag(self, tag):
+        if self.article_depth and tag not in {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'}:
+            self.article_depth -= 1
+
+    def handle_data(self, data):
+        if self.article_depth:
+            self.article_text.append(data)
+
 
 class GalleryIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.skins = gallery_skins()
+        cls.ids = [skin['id'] for skin in cls.skins]
         cls.tmp = tempfile.TemporaryDirectory()
         cls.output = Path(cls.tmp.name) / 'public'
         result = subprocess.run(
@@ -59,25 +79,55 @@ class GalleryIntegration(unittest.TestCase):
         return (self.output/relative).read_text()
 
     def test_separate_builds_share_content_but_not_skin_assets(self):
+        style_signatures = {}
+        baseline_text = None
+        for identifier in self.ids:
+            with self.subTest(skin=identifier):
+                article = self.read(f'{identifier}/posts/hello/index.html')
+                for text in ['A notebook for the curious', 'Keep the details', 'Compare ideas']:
+                    self.assertIn(text, article)
+                doc = Document(article)
+                article_text = ' '.join(' '.join(doc.article_text).split())
+                self.assertTrue(article_text, f'{identifier} has no rendered article body')
+                if baseline_text is None:
+                    baseline_text = article_text
+                self.assertEqual(article_text, baseline_text, f'{identifier} changes representative content')
+                if '/archie-skins/inua/base.' in article:
+                    self.assertIn(f'/archie-skins/{identifier}/tokens.', article)
+                # Variant-local assets must never accidentally point into another
+                # rendered variant, even when two modules share implementation assets.
+                local_css = []
+                for resource in doc.resources:
+                    resource_path = urlparse(resource).path
+                    if resource_path.endswith('.css') and resource_path != '/preview/gallery.css':
+                        self.assertTrue(resource_path.startswith(f'/preview/{identifier}/'), resource)
+                        local_css.append(resource_path.removeprefix(f'/preview/{identifier}/'))
+                    for other in self.ids:
+                        if other != identifier:
+                            self.assertFalse(resource_path.startswith(f'/preview/{other}/'), resource)
+                self.assertTrue(local_css, f'{identifier} has no stylesheets')
+                style_signatures[identifier] = tuple(sorted(local_css))
         stock = self.read('stock/posts/hello/index.html')
         retro = self.read('retro/posts/hello/index.html')
-        for content in (stock, retro):
-            self.assertIn('A notebook for the curious', content)
-            self.assertIn('Keep the details', content)
-            self.assertIn('Compare ideas', content)
         self.assertNotIn('/archie-skins/retro/skin.', stock)
         self.assertIn('/preview/retro/archie-skins/retro/skin.', retro)
         self.assertFalse((self.output/'stock/archie-skins/retro').exists())
         self.assertIn('/preview/stock/css/main.', stock)
         self.assertIn('/preview/retro/css/main.', retro)
+        for identifier in self.ids:
+            if identifier != 'stock':
+                self.assertNotEqual(style_signatures['stock'], style_signatures.get(identifier),
+                                    f'{identifier} silently renders only stock styles')
+        self.assertEqual(len(set(style_signatures.values())), len(self.ids),
+                         'Each gallery skin must select a distinct stylesheet set')
 
     def test_switching_links_keep_equivalent_pages(self):
         for relative in ['index.html', 'posts/hello/index.html', 'tags/notes/index.html']:
             suffix = relative.removesuffix('index.html')
-            for current in ['stock', 'retro']:
+            for current in self.ids:
                 doc = Document(self.read(f'{current}/{relative}'))
                 self.assertEqual(doc.gallery_count, 1)
-                self.assertEqual(set(doc.switches), {'stock', 'retro'})
+                self.assertEqual(set(doc.switches), set(self.ids))
                 for target, attrs in doc.switches.items():
                     self.assertEqual(urlparse(attrs['href']).path, f'/preview/{target}/{suffix}')
                     if target == current:
@@ -87,8 +137,8 @@ class GalleryIntegration(unittest.TestCase):
         for relative in ['index.html', '404.html']:
             doc = Document(self.read(relative))
             paths = [urlparse(href).path for href in doc.links]
-            self.assertIn('/preview/stock/', paths)
-            self.assertIn('/preview/retro/', paths)
+            for identifier in self.ids:
+                self.assertIn(f'/preview/{identifier}/', paths)
         self.assertTrue((self.output/'gallery.css').is_file())
         self.assertTrue((self.output/'gallery.js').is_file())
 

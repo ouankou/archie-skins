@@ -58,6 +58,6 @@ the custom-domain/HTTPS setting does not match. No token for another repository
 is needed: local replacements build the current checked-out modules, fetching
 only public upstream Archie.
 
-The first deployment requires this PR to be merged into `main`; no merge is
-performed automatically. The project uses logical commits and rebase merging only.
+New demo changes require review and merge into `main`; no merge is performed
+automatically. The project uses logical commits and rebase merging only.
 The existing blog's deployment is separate and is not touched by this workflow.

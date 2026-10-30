@@ -30,6 +30,9 @@ def load_skins(manifest):
             raise ValueError('skin path must identify a module inside this repository')
         if not skin.get('name') or not skin.get('module') or not skin.get('description'):
             raise ValueError('each skin needs name, module, and description')
+        if 'preview' in skin and (set(skin['preview']) != {'background', 'foreground', 'accent'} or
+                not all(re.fullmatch(r'#[0-9A-Fa-f]{6}', value) for value in skin['preview'].values())):
+            raise ValueError('preview must contain background, foreground, and accent hex colors')
     return skins
 
 
@@ -60,7 +63,9 @@ def build(destination, base_url, manifest):
             shutil.copytree(ROOT / 'exampleSite/content', site / 'content')
             module = skin['module']
             (site / 'go.mod').write_text('module example.org/archie-gallery\n\ngo 1.23.0\n\n'
-                + f'require {module} v0.0.0\nreplace {module} => {json.dumps(str((ROOT / skin["path"]).resolve()))}\n')
+                + f'require {module} v0.0.0\nreplace {module} => {json.dumps(str((ROOT / skin["path"]).resolve()))}\n'
+                + (f'replace github.com/ouankou/archie-skins => {json.dumps(str(ROOT))}\n'
+                   if module != 'github.com/ouankou/archie-skins' else ''))
             variant = dict(config, baseURL=base_url + identifier + '/', module={'imports': [{'path': module}]})
             (site / 'hugo.json').write_text(json.dumps(variant))
             subprocess.run([os.environ.get('HUGO_BIN', 'hugo'), '--source', str(site),
@@ -103,9 +108,13 @@ def build(destination, base_url, manifest):
             markup = re.sub(r'(<body\b[^>]*>)', lambda match: match[0] + chrome, markup, count=1)
             path.write_text(markup)
 
-    cards = ''.join(f'<a class="gallery-card" href="{base_path}{skin["id"]}/"><h2>{html.escape(skin["name"])}</h2><p>{html.escape(skin["description"])}</p><span>Explore this skin →</span></a>' for skin in skins)
+    def card(skin):
+        preview = skin.get('preview')
+        swatch = (f'<div class="gallery-swatch" aria-hidden="true" style="--preview-bg:{preview["background"]};--preview-fg:{preview["foreground"]};--preview-accent:{preview["accent"]}"><i></i><b>Field Notes</b><em>A notebook for the curious.</em></div>' if preview else '')
+        return f'<a class="gallery-card" href="{base_path}{skin["id"]}/">{swatch}<h2>{html.escape(skin["name"])}</h2><p>{html.escape(skin["description"])}</p><span>Explore this skin →</span></a>'
+    cards = ''.join(card(skin) for skin in skins)
     def document(title, body):
-        return f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · Archie skins</title><link rel="stylesheet" href="{base_path}gallery.css"></head><body class="gallery-index"><main><p class="gallery-eyebrow">One notebook. Different personalities.</p><h1>{title}</h1>{body}<footer>Built from the same representative content. Preview controls belong only to this demo.</footer></main></body></html>'
+        return f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · Archie skins</title><link rel="stylesheet" href="{base_path}gallery.css"></head><body class="gallery-index"><main><p class="gallery-eyebrow">One notebook. Different personalities.</p><h1>{title}</h1>{body}<footer>Built from the same representative content. Preview controls belong only to this demo.<p>The seven Japanese-named palettes are independently adapted from <a href="https://inua.one/">Inua</a>, with <a href="https://github.com/lyricat/inua/tree/d677a83cac983e2ba549c4ea52a67362a3b7eb98/ui/themes">Apache-2.0 source credits</a>. No affiliation or endorsement.</p></footer></main></body></html>'
     (destination / 'index.html').write_text(document('Archie skin gallery', '<p>Choose a style, then switch while reading to compare the same page.</p><div class="gallery-cards">' + cards + '</div>'))
     (destination / '404.html').write_text(document('Page not found', '<p>This preview page does not exist. Return to the <a href="' + base_path + '">gallery</a> or choose a skin:</p><nav class="skin-gallery" aria-label="Choose a skin">' + links() + '</nav>'))
     for asset in ('gallery.css', 'gallery.js'):

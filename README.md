@@ -7,10 +7,20 @@ Pick **one module import**; keep your content and normal Archie configuration.
 | --- | --- |
 | `github.com/ouankou/archie-skins` | Unmodified upstream Archie (no skin) |
 | `github.com/ouankou/archie-skins/skins/retro` | Analog cassette / vintage reading layout |
+| `github.com/ouankou/archie-skins/skins/washi` | 和紙 — warm paper and ink (light) |
+| `github.com/ouankou/archie-skins/skins/aojashin` | 青写真 — blueprint blue (light) |
+| `github.com/ouankou/archie-skins/skins/yoru` | 夜 — quiet night (dark) |
+| `github.com/ouankou/archie-skins/skins/suimen` | 水面 — night water (dark) |
+| `github.com/ouankou/archie-skins/skins/rinko` | 燐光 — phosphor green (dark) |
+| `github.com/ouankou/archie-skins/skins/bunko` | 分光 — indigo and cyan (dark) |
+| `github.com/ouankou/archie-skins/skins/denko` | 電光 — violet and electric cyan (dark) |
 
-Both modules pin the same upstream commit. No upstream files are vendored or
+All styles resolve the same tested upstream commit. No upstream files are vendored or
 patched. Only the retro module mounts retro templates, CSS, and JavaScript; the
-root module does not mount `skins/`. New styles are independent sibling modules.
+root module does not mount `skins/`. Its Inua assets/helpers are opt-in and do not
+change stock output. New styles are independent sibling modules.
+The seven [Inua adaptations](docs/inua-skins.md) preserve its exact palettes and
+shared restrained design; they are not seven unrelated template forks.
 
 ## New site
 
@@ -43,8 +53,7 @@ title = "Field Notes"
 Then pin a reviewed commit or release and start writing:
 
 ```sh
-# While reviewing the first PR, use its branch; after merge, use @main or a tag.
-hugo mod get github.com/ouankou/archie-skins/skins/retro@feat/composable-archie-skins
+hugo mod get github.com/ouankou/archie-skins/skins/retro@main
 hugo new content posts/hello.md
 hugo server -D
 ```
@@ -119,8 +128,9 @@ node --test tests/theme.test.cjs
 node tests/browser.cjs
 ```
 
-CI builds the real upstream dependency with Hugo 0.157.0, runs integration and
-browser checks, and never deploys a site.
+CI builds the real upstream dependency with the [audited current toolchain](docs/workflow-versions.md)
+and runs integration, downloaded-module, and browser checks. PRs never deploy;
+the separate Pages job deploys tested main builds only.
 
 ## Licensing
 
@@ -134,9 +144,13 @@ MIT notices: [Archie](skins/retro/LICENSE-Archie),
 [Feather](skins/retro/LICENSE-Feather). Those third-party components are not
 relicensed. See the [provenance notice](skins/retro/NOTICE.md).
 
+The seven adapted Inua token files remain **Apache-2.0**, with full license and
+change notices in both source modules and emitted CSS. Our shared adapter is
+BSD-2-Clause. See [Inua provenance and boundaries](docs/inua-skins.md#provenance-and-licensing).
+
 ## Preview gallery
 
-The [demo gallery](https://archie.ouankou.com/) is designed to compare stock Archie
-and retro using the same content, with page-preserving skin switching. It deploys
-from `main` through GitHub Actions once this PR is merged and the Pages custom
-domain is configured; PR builds never deploy. See [gallery setup and extension](docs/demo-gallery.md).
+The [demo gallery](https://archie.ouankou.com/) compares every registered skin
+using the same content, with page-preserving skin switching. It deploys from
+`main` through GitHub Actions; PR builds never deploy. New draft-PR styles appear
+live only after review and merge. See [gallery setup and extension](docs/demo-gallery.md).
